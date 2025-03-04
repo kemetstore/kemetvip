@@ -68,6 +68,7 @@ systemctl enable kyt
 systemctl restart kyt
 cd /root
 rm -rf kyt.sh
+clear
 echo "Done"
 echo "Your Data Bot"
 echo -e "==============================="
@@ -76,6 +77,4 @@ echo "Admin          : $admin"
 echo "Domain        : $domain"
 echo -e "==============================="
 echo "Setting done"
-clear
-
 echo " Installations complete, type /menu on your bot"
