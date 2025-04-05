@@ -3,7 +3,9 @@ NS=$( cat /etc/xray/dns )
 PUB=$( cat /etc/slowdns/server.pub )
 domain=$(cat /etc/xray/domain)
 #color
-
+mkdir -p /root/Assets
+cd /root/Assets
+wget -q https://raw.githubusercontent.com/kemetstore/vip/refs/heads/main/limit/kemetbot.jpg
 cd /etc/systemd/system/
 rm -rf kyt.service
 cd
