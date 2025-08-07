@@ -1,47 +1,18 @@
-<p style="text-align:center"> <font color='#FF0059'>࿗⚍⚍</font><font
+cat > /etc/banner.txt <<'EOF'
+\e[95m࿗⚍⚍⚍⚍⚍☬۩۞۩☬⚍⚍⚍⚍⚍࿗\e[0m
+        \e[93mᚖᚔ ༀ KEMET PREMIUM ༀ ᚔᚖ\e[0m
+\e[95m࿗⚍⚍⚍⚍⚍☬۩۞۩☬⚍⚍⚍⚍⚍࿗\e[0m
 
-color='#F1006F'>⚍</font><font color='#E30085'>⚍</font><font
+\e[91m[!] TERM OF SERVICE [!]\e[0m
 
-color='#D6009B'>⚍</font><font color='#C800B1'>⚍</font><font
+\e[96m• NO SPAM\e[0m  
+\e[96m• NO DDOS\e[0m  
+\e[96m• NO HACKING & CARDING\e[0m  
+\e[96m• NO TORRENT\e[0m  
+\e[96m• NO MULTI LOGIN\e[0m  
 
-color='#BB00C7'>☬</font><font color='#AD00DD'>۩</font><font
+\e[92mOrder Premium:\e[0m  
+📱 WA: wa.me/6285943111681
 
-color='#9F00F3'>۞</font><font color='#9F00F3'>۩</font><font
-
-color='#AD00DD'>☬</font><font color='#BB00C7'>⚍</font><font
-
-color='#C800B1'>⚍</font><font color='#D6009B'>⚍</font><font
-
-color='#E30085'>⚍</font><font color='#F1006F'>⚍⚍࿗</font><br> <font
-
-color="#F5FE00"><b> ᚖᚔ ༀ KEMET PREMIUM ༀ ᚔᚖ </b></font><br> <font
-
-color='red'>! TERM OF SERVICE !</font><br> <font color='#20CDCC'><b> NO SPAM
-
-</b></font><br> <font color='#10C7E5'><b> NO DDOS </b></font><br> <font
-
-color='#00C1FF'><b> NO HACKING AND CARDING </b></font><br> <font
-
-color="#E51369"><b> NO TORRENT!!  </b> </font><br> <font color="#E51369"><b> NO
-
-MULTI LOGIN!!  </b> </font><br> <font color="#483D8B"><b> Order Premium : <br>
-
-<br> WA: wa.me/6285943111681</font><br> <font
-
-color="#483D8B"><b>👉NO MULTI LOGIN!!👈</font><br> <font
-
-color='#FF0059'>࿗⚍⚍</font><font color='#F1006F'>⚍</font><font
-
-color='#E30085'>⚍</font><font color='#D6009B'>⚍</font><font
-
-color='#C800B1'>⚍</font><font color='#BB00C7'>☬</font><font
-
-color='#AD00DD'>۩</font><font color='#9F00F3'>۞</font><font
-
-color='#9F00F3'>۩</font><font color='#AD00DD'>☬</font><font
-
-color='#BB00C7'>⚍</font><font color='#C800B1'>⚍</font><font
-
-color='#D6009B'>⚍</font><font color='#E30085'>⚍</font><font
-
-color='#F1006F'>⚍⚍࿗</font>
+\e[95m࿗⚍⚍⚍⚍⚍☬۩۞۩☬⚍⚍⚍⚍⚍࿗\e[0m
+EOF
