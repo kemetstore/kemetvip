@@ -176,60 +176,75 @@ function is_root() {
 }
 
 
-# Buat direktori xray
-print_install "Membuat direktori xray"
+# === Buat direktori Xray & persiapan sistem ===
+function setup_xray_dirs() {
+    print_install "Membuat direktori Xray dan struktur file"
 
-mkdir -p /etc/xray
-curl -s ifconfig.me > /etc/xray/ipvps
-touch /etc/xray/domain
+    # Direktori utama Xray
+    mkdir -p /etc/xray
+    curl -s ifconfig.me > /etc/xray/ipvps
+    touch /etc/xray/domain
 
-mkdir -p /var/log/xray
-chown www-data:www-data /var/log/xray
-chmod 755 /var/log/xray
-touch /var/log/xray/access.log
-touch /var/log/xray/error.log
+    # Direktori log
+    mkdir -p /var/log/xray
+    chown www-data:www-data /var/log/xray
+    chmod 755 /var/log/xray
+    touch /var/log/xray/access.log
+    touch /var/log/xray/error.log
 
-mkdir -p /var/lib/kyt >/dev/null 2>&1
+    # Direktori library tambahan
+    mkdir -p /var/lib/kyt >/dev/null 2>&1
 
-# Ambil Informasi RAM
-mem_total=0
-mem_used=0
-while IFS=":" read -r key value; do
-    case $key in
-        "MemTotal") mem_total=${value//[!0-9]/} ;;
-        "Shmem") ((mem_used+=${value//[!0-9]/})) ;;
-        "MemFree" | "Buffers" | "Cached" | "SReclaimable") 
-            ((mem_used-=${value//[!0-9]/})) ;;
-    esac
-done < /proc/meminfo
+    # Ambil informasi RAM
+    mem_total=0
+    mem_used=0
+    while IFS=":" read -r key value; do
+        case $key in
+            "MemTotal") mem_total=${value//[!0-9]/} ;;
+            "Shmem") ((mem_used+=${value//[!0-9]/})) ;;
+            "MemFree" | "Buffers" | "Cached" | "SReclaimable") 
+                ((mem_used-=${value//[!0-9]/})) ;;
+        esac
+    done < /proc/meminfo
 
-Ram_Usage=$((mem_used / 1024))
-Ram_Total=$((mem_total / 1024))
+    Ram_Usage=$((mem_used / 1024))
+    Ram_Total=$((mem_total / 1024))
 
-# Informasi sistem
-tanggal=$(date +"%d-%m-%Y - %X")
-OS_Name=$(grep -w PRETTY_NAME /etc/os-release | cut -d= -f2 | tr -d '"')
-Kernel=$(uname -r)
-Arch=$(uname -m)
-Public_IP=$(curl -s https://ipinfo.io/ip)
+    # Informasi sistem
+    tanggal=$(date +"%d-%m-%Y - %X")
+    OS_Name=$(grep -w PRETTY_NAME /etc/os-release | cut -d= -f2 | tr -d '"')
+    Kernel=$(uname -r)
+    Arch=$(uname -m)
+    Public_IP=$(curl -s https://ipinfo.io/ip)
 
-export tanggal
-export OS_Name
-export Kernel
-export Arch
-export Public_IP
+    export tanggal
+    export OS_Name
+    export Kernel
+    export Arch
+    export Public_IP
 
-# Fungsi Setup Awal Sistem
+    print_success "Direktori Xray dan file log berhasil dibuat"
+}
+
+# === Fungsi Setup Awal Sistem ===
 function first_setup() {
     print_install "Melakukan setup awal sistem"
+
+    # Set timezone
     timedatectl set-timezone Asia/Jakarta
 
+    # Konfigurasi auto-save iptables
     echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
     echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
 
+    # Update & install paket dasar
     apt update -y
-    apt install nginx iptables-persistent -y
+    apt upgrade -y
+    apt install -y nginx iptables-persistent curl wget unzip bzip2 gzip
+
+    print_success "Setup awal sistem selesai"
 }
+
 
 # Update and remove packages
 function base_package2() {
