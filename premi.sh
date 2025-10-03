@@ -1,13 +1,8 @@
 #!/bin/bash
-export DEBIAN_FRONTEND=noninteractive
-echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
-apt install -y
-apt upgrade -y
-apt update -y
-apt install curl -y
-apt install wondershaper -y
-apt install lolcat -y
-gem install lolcat
+# === Update & Install Tools Dasar ===
+apt update -y && apt upgrade -y
+apt install -y lolcat wondershaper curl wget jq
+
 Green="\e[92;1m"
 RED="\033[1;31m"
 YELLOW="\033[33m"
