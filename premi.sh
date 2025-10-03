@@ -1,10 +1,7 @@
 #!/bin/bash
+set -euo pipefail
 
-# === Update & Install Tools Dasar ===
-apt update -y && apt upgrade -y
-apt install -y lolcat wondershaper curl wget jq
-
-# === WARNA ===
+# === WARNA & STATUS ===
 GREEN="\e[92;1m"
 RED="\033[31m"
 YELLOW="\033[33m"
@@ -14,50 +11,18 @@ NC='\e[0m'
 OK="${GREEN}[OK]${NC}"
 ERROR="${RED}[ERROR]${NC}"
 
-# === BACA INFO ISP DAN KOTA (fallback kalau file nggak ada) ===
-ISP=$(cat /etc/xray/isp 2>/dev/null || echo "Unknown")
-CITY=$(cat /etc/xray/city 2>/dev/null || echo "Unknown")
-
-# === DAPATKAN IP PUBLIK ===
-ipsaya=$(curl -s https://ipinfo.io/ip)
-
-# === TAMPILKAN INFO AWAL ===
-clear
-echo -e "${YELLOW}-----------------------------------------------${NC}"
-echo -e "${GREEN}           KEMET JS STORE INITIAL SETUP${NC}"
-echo -e "${YELLOW}-----------------------------------------------${NC}"
-echo -e "${BLUE}IP Address  :${NC} $ipsaya"
-echo -e "${BLUE}ISP         :${NC} $ISP"
-echo -e "${BLUE}City        :${NC} $CITY"
-echo -e "${YELLOW}-----------------------------------------------${NC}"
-sleep 2
-
-# === BANNER ===
-clear
-echo -e "${YELLOW}----------------------------------------------------------${NC}"
-echo -e "   Welcome to ${GREEN}KEMET JS STORE VPN Setup${NC} ${YELLOW}(Stable Edition)${NC}"
-echo -e "   This script will quickly install a VPN server on your system."
-echo -e "   Author  : ${GREEN}Kemet Premium®${NC} (${BLUE}kemetjs.github.io${NC})"
-echo -e "${YELLOW}----------------------------------------------------------${NC}"
-echo ""
-sleep 2
-
-# === CEK ARSITEKTUR OS ===
-arch=$(uname -m)
-echo -e "${OK} Detected Architecture: ${GREEN}$arch${NC}"
-
-if [[ "$arch" != "x86_64" ]]; then
-    echo -e "${YELLOW}[WARNING]${NC} Non-x86_64 architecture detected. Pastikan script kompatibel."
-fi
+info()  { echo -e "[*] $*"; }
+succ()  { echo -e "${OK} $*"; }
+warn()  { echo -e "${YELLOW}[WARNING]${NC} $*"; }
+fail()  { echo -e "${ERROR} $*"; }
 
 # === CEK SISTEM OPERASI ===
 os_id=$(grep -w ID /etc/os-release | cut -d= -f2 | tr -d '"')
 os_name=$(grep -w PRETTY_NAME /etc/os-release | cut -d= -f2 | tr -d '"')
 
 echo -e "${OK} Detected OS: ${GREEN}$os_name${NC}"
-
 if [[ "$os_id" != "ubuntu" && "$os_id" != "debian" ]]; then
-    echo -e "${YELLOW}[WARNING]${NC} Non-Ubuntu/Debian system detected. Pastikan semua fitur kompatibel."
+    warn "Non-Ubuntu/Debian system detected. Pastikan semua fitur kompatibel."
 fi
 
 # === VALIDASI MANUAL (ENTER UNTUK LANJUT) ===
@@ -67,33 +32,32 @@ echo ""
 
 # === CEK AKSES ROOT ===
 if [ "${EUID}" -ne 0 ]; then
-    echo -e "${ERROR} You need to run this script as root."
+    fail "You need to run this script as root."
     exit 1
 fi
 
 # === CEK VIRTUALISASI ===
 if [ "$(systemd-detect-virt)" == "openvz" ]; then
-    echo -e "${ERROR} OpenVZ virtualization is not supported."
+    fail "OpenVZ virtualization is not supported."
     exit 1
 fi
 
 # === IZIN SCRIPT ===
 MYIP=$(curl -sS ipv4.icanhazip.com)
-echo -e "${GREEN}Loading authorization data...${NC}"
+info "Loading authorization data..."
 sleep 1
 clear
 
-
-# Ambil informasi user dari izin database
-username=$(curl -s https://raw.githubusercontent.com/kemetstore/izinsc/main/ip | grep $MYIP | awk '{print $2}')
-exp_date=$(curl -s https://raw.githubusercontent.com/kemetstore/izinsc/main/ip | grep $MYIP | awk '{print $3}')
-geo_exp=$(curl -s https://raw.githubusercontent.com/kemetstore/izinsc/main/ip | grep $MYIP | awk '{print $4}')
+# Ambil informasi user dari database izin online
+username=$(curl -s https://raw.githubusercontent.com/kemetstore/izinsc/main/ip | grep "$MYIP" | awk '{print $2}')
+exp_date=$(curl -s https://raw.githubusercontent.com/kemetstore/izinsc/main/ip | grep "$MYIP" | awk '{print $3}')
+geo_exp=$(curl -s https://raw.githubusercontent.com/kemetstore/izinsc/main/ip | grep "$MYIP" | awk '{print $4}')
 
 # Simpan ke file lokal
 echo "$username" > /usr/bin/user
 echo "$exp_date" > /usr/bin/e
 
-# Tampilkan detail
+# Tampilkan detail izin
 today=$(date +%Y-%m-%d)
 if [[ -n "$exp_date" ]]; then
     d1=$(date -d "$exp_date" +%s)
@@ -104,12 +68,13 @@ else
 fi
 
 # Tampilkan info
-echo -e "${green}Authorization Success${NC}"
-echo -e "${green}Username     :${NC} $username"
-echo -e "${green}IP Address   :${NC} $MYIP"
-echo -e "${green}Expiry Date  :${NC} $exp_date"
-echo -e "${green}Valid for    :${NC} $cert_days days"
+echo -e "${GREEN}Authorization Success${NC}"
+echo -e "${GREEN}Username     :${NC} ${username:-Unknown}"
+echo -e "${GREEN}IP Address   :${NC} ${MYIP:-Unknown}"
+echo -e "${GREEN}Expiry Date  :${NC} ${exp_date:-Unknown}"
+echo -e "${GREEN}Valid for    :${NC} ${cert_days:-Unknown} days"
 echo ""
+
 
 # ========================
 # STATUS EXPIRED / AKTIF
@@ -284,7 +249,7 @@ ins_package "cmake"
 ins_package "git"
 ins_package "screen"
 ins_package "socat"
-ins_package "xz-utlis"
+ins_package "xz-utils"
 ins_package "apt-transport-https"
 ins_package "bash-completion"
 ins_package "ntpdate"
@@ -293,8 +258,8 @@ ins_package "openvpn"
 ins_package "easy-rsa"
 ins_package "chrony"
 
-systemctl enable chronyd
-systemctl restart chronyd
+systemctl enable chrony
+systemctl restart chrony
 systemctl enable chrony
 systemctl restart chrony
 chronyc sourcestats -v
@@ -304,25 +269,43 @@ print_success "Packet Yang Dibutuhkan"
 }
 
 function base_package() {
-clear
-sleep 1
-print_install "Menginstall Packet Yang Dibutuhkan"
-apt update -y
-apt install sudo -y
-sudo apt-get clean all
-apt install -y debconf-utils
-apt install p7zip-full -y
-apt-get remove --purge ufw firewalld -y
-apt-get remove --purge exim4 -y
-apt-get autoremove -y
-apt install -y --no-install-recommends software-properties-common
-echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
-echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
-sudo DEBIAN_FRONTEND=noninteractive apt-get -y install iptables iptables-persistent netfilter-persistent libxml-parser-perl squid screen curl jq bzip2 gzip coreutils rsyslog zip unzip net-tools sed bc apt-transport-https build-essential dirmngr libxml-parser-perl lsof openvpn easy-rsa fail2ban tmux squid dropbear socat cron bash-completion ntpdate xz-utils apt-transport-https chrony pkg-config bison make git speedtest-cli p7zip-full zlib1g-dev python-is-python3 python3-pip shc build-essential nodejs nginx php php-fpm php-cli php-mysql p7zip-full squid libcurl4-openssl-dev
+    clear
+    sleep 1
+    print_install "Menginstall Paket Yang Dibutuhkan"
+
+    # Update & install dasar
+    apt update -y
+    apt install -y sudo debconf-utils p7zip-full \
+        --no-install-recommends software-properties-common lsb-release gnupg curl
+
+    # Bersih & hapus paket yang nggak dipakai
+    sudo apt-get clean all
+    sudo apt-get remove --purge -y ufw firewalld exim4
+    sudo apt-get autoremove -y
+
+    # Set auto-save iptables
+    echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
+    echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
+
+    # Install paket utama
+    sudo DEBIAN_FRONTEND=noninteractive apt-get -y install \
+        iptables iptables-persistent netfilter-persistent libxml-parser-perl \
+        squid screen curl jq bzip2 gzip coreutils rsyslog zip unzip net-tools sed bc \
+        apt-transport-https build-essential dirmngr lsof openvpn easy-rsa fail2ban tmux \
+        dropbear socat cron bash-completion ntpdate xz-utils chrony pkg-config bison make git \
+        speedtest-cli zlib1g-dev python3 python3-pip shc nodejs npm nginx \
+        php php-fpm php-cli php-mysql libcurl4-openssl-dev
+
+    # Optional: install latest Node.js LTS jika default terlalu lawas
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+    apt-get install -y nodejs
+}
+
+
 
 # remove unnecessary files
 sudo apt-get autoclean -y >/dev/null 2>&1
-audo apt-get -y --purge removd unscd >/dev/null 2>&1
+sudo apt-get -y --purge removd unscd >/dev/null 2>&1
 sudo apt-get -y --purge remove samba* >/dev/null 2>&1
 sudo apt-get -y --purge remove apache2* >/dev/null 2>&1
 sudo apt-get -y --purge remove bind9* >/dev/null 2>&1
@@ -534,11 +517,12 @@ EOF
 
 
 
-function ssh(){
-clear
-print_install "Memasang Password SSH"
+function ssh() {
+    clear
+    print_install "Memasang Password SSH"
+
     wget -q -O /etc/pam.d/common-password "${REPO}Fls/password"
-chmod +x /etc/pam.d/common-password
+    chmod +x /etc/pam.d/common-password
 
     DEBIAN_FRONTEND=noninteractive dpkg-reconfigure keyboard-configuration
     debconf-set-selections <<<"keyboard-configuration keyboard-configuration/altgr select The default for the keyboard layout"
@@ -560,8 +544,10 @@ chmod +x /etc/pam.d/common-password
     debconf-set-selections <<<"keyboard-configuration keyboard-configuration/variant select English"
     debconf-set-selections <<<"keyboard-configuration keyboard-configuration/xkb-keymap select "
 
-# go to root
-cd
+    # go to root
+    cd
+}
+
 
 function setup_rc_local() {
     print_install "Setup rc.local + Disable IPv6 + Timezone + Locale"
